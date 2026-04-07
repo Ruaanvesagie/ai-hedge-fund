@@ -257,7 +257,7 @@ class ApiKeyUpdateRequest(BaseModel):
 
 
 class ApiKeyResponse(BaseModel):
-    """Complete API key response"""
+    """Complete API key response – key_value is masked for security."""
     id: int
     provider: str
     key_value: str
@@ -269,6 +269,16 @@ class ApiKeyResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+    @classmethod
+    def from_orm_masked(cls, obj):
+        """Create response with masked key value (show first 4 and last 4 chars)."""
+        resp = cls.from_orm(obj)
+        if resp.key_value and len(resp.key_value) > 8:
+            resp.key_value = resp.key_value[:4] + "****" + resp.key_value[-4:]
+        elif resp.key_value:
+            resp.key_value = "****"
+        return resp
 
 
 class ApiKeySummaryResponse(BaseModel):

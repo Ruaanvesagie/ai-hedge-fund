@@ -1,32 +1,38 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import os
+"""Database connection helpers."""
+
+from __future__ import annotations
+
 from pathlib import Path
+from typing import Dict
 
-# Get the backend directory path
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+from app.backend.core.config import get_settings
+
 BACKEND_DIR = Path(__file__).parent.parent
-DATABASE_PATH = BACKEND_DIR / "hedge_fund.db"
+_default_db_path = BACKEND_DIR / "hedge_fund.db"
+settings = get_settings()
 
-# Database configuration - use absolute path
-DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
+DATABASE_URL = settings.database_url or f"sqlite:///{_default_db_path}"
+_connect_args: Dict[str, object] = {}
+engine_kwargs = {"pool_pre_ping": True}
 
-# Create SQLAlchemy engine
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False}  # Needed for SQLite
-)
+if DATABASE_URL.startswith("sqlite"):
+    _connect_args["check_same_thread"] = False
+else:
+    # Give Postgres/MySQL connections a modest pool suitable for small deployments
+    engine_kwargs.update({"pool_size": 5, "max_overflow": 5})
 
-# Create SessionLocal class
+engine = create_engine(DATABASE_URL, connect_args=_connect_args, **engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Create Base class for models
 Base = declarative_base()
 
-# Dependency for FastAPI
+
 def get_db():
+    """FastAPI dependency – yields a DB session and ensures cleanup."""
     db = SessionLocal()
     try:
         yield db
     finally:
-        db.close() 
+        db.close()
