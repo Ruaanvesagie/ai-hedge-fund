@@ -12,7 +12,7 @@ function BacktestProgress({ agentData }: { agentData: Record<string, any> }) {
   
   // Get the latest backtest result from the backtest results array
   const backtestResults = backtestAgent.backtestResults || [];
-  const latestBacktestResult = backtestResults.length > 0 ? backtestResults[backtestResults.length - 1] : null;
+  const _latestBacktestResult = backtestResults.length > 0 ? backtestResults[backtestResults.length - 1] : null;
   
   return (
     <Card className="bg-transparent mb-4">
