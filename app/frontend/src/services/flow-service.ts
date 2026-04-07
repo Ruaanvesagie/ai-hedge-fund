@@ -1,6 +1,5 @@
 import { Flow } from '@/types/flow';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { API_BASE_URL, authorizedFetch } from '@/services/http-client';
 
 export interface CreateFlowRequest {
   name: string;
@@ -24,32 +23,29 @@ export interface UpdateFlowRequest {
   tags?: string[];
 }
 
+const jsonHeaders = () => new Headers({ 'Content-Type': 'application/json' });
+
 export const flowService = {
-  // Get all flows
   async getFlows(): Promise<Flow[]> {
-    const response = await fetch(`${API_BASE_URL}/flows/`);
+    const response = await authorizedFetch(`${API_BASE_URL}/flows/`);
     if (!response.ok) {
       throw new Error('Failed to fetch flows');
     }
     return response.json();
   },
 
-  // Get a specific flow
   async getFlow(id: number): Promise<Flow> {
-    const response = await fetch(`${API_BASE_URL}/flows/${id}`);
+    const response = await authorizedFetch(`${API_BASE_URL}/flows/${id}`);
     if (!response.ok) {
       throw new Error('Failed to fetch flow');
     }
     return response.json();
   },
 
-  // Create a new flow
   async createFlow(data: CreateFlowRequest): Promise<Flow> {
-    const response = await fetch(`${API_BASE_URL}/flows/`, {
+    const response = await authorizedFetch(`${API_BASE_URL}/flows/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: jsonHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) {
@@ -58,13 +54,10 @@ export const flowService = {
     return response.json();
   },
 
-  // Update an existing flow
   async updateFlow(id: number, data: UpdateFlowRequest): Promise<Flow> {
-    const response = await fetch(`${API_BASE_URL}/flows/${id}`, {
+    const response = await authorizedFetch(`${API_BASE_URL}/flows/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: jsonHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) {
@@ -73,9 +66,8 @@ export const flowService = {
     return response.json();
   },
 
-  // Delete a flow
   async deleteFlow(id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/flows/${id}`, {
+    const response = await authorizedFetch(`${API_BASE_URL}/flows/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {
@@ -83,19 +75,17 @@ export const flowService = {
     }
   },
 
-  // Duplicate a flow
   async duplicateFlow(id: number, newName?: string): Promise<Flow> {
-    const url = `${API_BASE_URL}/flows/${id}/duplicate${newName ? `?new_name=${encodeURIComponent(newName)}` : ''}`;
-    const response = await fetch(url, {
-      method: 'POST',
-    });
+    const url = `${API_BASE_URL}/flows/${id}/duplicate${
+      newName ? `?new_name=${encodeURIComponent(newName)}` : ''
+    }`;
+    const response = await authorizedFetch(url, { method: 'POST' });
     if (!response.ok) {
       throw new Error('Failed to duplicate flow');
     }
     return response.json();
   },
 
-  // Create a default flow for new users
   async createDefaultFlow(nodes: any, edges: any, viewport?: any): Promise<Flow> {
     return this.createFlow({
       name: 'My First Flow',
@@ -105,4 +95,4 @@ export const flowService = {
       viewport,
     });
   },
-}; 
+};

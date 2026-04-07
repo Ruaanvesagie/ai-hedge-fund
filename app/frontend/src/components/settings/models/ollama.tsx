@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { cn } from '@/lib/utils';
 import { AlertTriangle, Brain, CheckCircle, Download, Play, RefreshCw, Server, Square, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { API_BASE_URL, authorizedFetch } from '@/services/http-client';
 
 interface OllamaStatus {
   installed: boolean;
@@ -64,7 +65,7 @@ export function OllamaSettings() {
 
   const fetchOllamaStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8000/ollama/status');
+      const response = await authorizedFetch(`${API_BASE_URL}/ollama/status`);
       if (response.ok) {
         const status = await response.json();
         setOllamaStatus(status);
@@ -81,7 +82,7 @@ export function OllamaSettings() {
 
   const fetchRecommendedModels = async () => {
     try {
-      const response = await fetch('http://localhost:8000/ollama/models/recommended');
+      const response = await authorizedFetch(`${API_BASE_URL}/ollama/models/recommended`);
       if (response.ok) {
         const models = await response.json();
         setRecommendedModels(models);
@@ -97,7 +98,7 @@ export function OllamaSettings() {
     setActionLoading('start-server');
     setError(null);
     try {
-      const response = await fetch('http://localhost:8000/ollama/start', {
+      const response = await authorizedFetch(`${API_BASE_URL}/ollama/start`, {
         method: 'POST',
       });
       if (response.ok) {
@@ -117,7 +118,7 @@ export function OllamaSettings() {
     setActionLoading('stop-server');
     setError(null);
     try {
-      const response = await fetch('http://localhost:8000/ollama/stop', {
+      const response = await authorizedFetch(`${API_BASE_URL}/ollama/stop`, {
         method: 'POST',
       });
       if (response.ok) {
@@ -143,7 +144,7 @@ export function OllamaSettings() {
 
     try {
       // Make a POST request to the progress endpoint which returns a streaming response
-      const response = await fetch('http://localhost:8000/ollama/models/download/progress', {
+      const response = await authorizedFetch(`${API_BASE_URL}/ollama/models/download/progress`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
