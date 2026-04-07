@@ -1,4 +1,25 @@
 services:
+  # -------------------------------------------------------------------------
+  # Backend API – serves the FastAPI application
+  # -------------------------------------------------------------------------
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ai-hedge-fund
+    volumes:
+      - ../.env:/app/.env
+      - backend_db:/app/app/backend   # persist SQLite DB
+    command: uvicorn app.backend.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      PYTHONPATH: /app
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      CORS_EXTRA_ORIGINS: ${CORS_EXTRA_ORIGINS:-}
+    restart: unless-stopped
+
   ollama:
     profiles:
       - embedded-ollama
@@ -91,4 +112,5 @@ services:
     stdin_open: true
 
 volumes:
-  ollama_data: 
+  ollama_data:
+  backend_db:
